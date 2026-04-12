@@ -42,3 +42,4 @@
 
 *.bat
 temp.*
+.vscode/
