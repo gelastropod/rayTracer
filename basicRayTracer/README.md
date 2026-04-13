@@ -26,12 +26,13 @@ I test my code regularly, resulting in many different "versions", all with numbe
 1. Initial test, essentially a gradient.
 2. Test of `vec3` class (a class represnting a 3-dimensional vector).
 3. Adding `Ray` and `Camera` class, simple representation of shooting rays out of a camera.
+4. Implementing abstract class `Hittable`, which shoots a given ray and checks if it intersects with an object, and returns information in a `HittableRecord`. Implementation of a primitive `Sphere`, as well as list of primitives `HittableList`. Additional implementation of anti-aliasing by sending multiple rays randomly within the same pixel.
 
 ## Usage
 1. Enter one of the sub-directories corresponding to the target version of ray-tracer.
 2. Make sure `temp.ppm` is cleared from this directory. If not, delete it.
 3. Compile `main.cpp` using a compiler.  
-Example: `gcc main.cpp -o main`
+Example: `gcc -I ./ main.cpp -o main`
 4. Run the compiled program:  
 `main`
 5. Use `ffmpeg` (or any other converter) to convert `temp.ppm` into a `.png` file:  
