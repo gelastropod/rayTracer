@@ -24,6 +24,7 @@ Then, I convert the intermediate `temp.ppm` file to a `.png` image file using `f
 I test my code regularly, resulting in many different "versions", all with numbered output `.png`s. They are described below:
 
 1. Initial test, essentially a gradient.
+2. Test of `vec3` class (a class represnting a 3-dimensional vector).
 
 ## Usage
 1. Enter one of the sub-directories corresponding to the target version of ray-tracer.
