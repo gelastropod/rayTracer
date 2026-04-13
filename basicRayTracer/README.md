@@ -25,6 +25,7 @@ I test my code regularly, resulting in many different "versions", all with numbe
 
 1. Initial test, essentially a gradient.
 2. Test of `vec3` class (a class represnting a 3-dimensional vector).
+3. Adding `Ray` and `Camera` class, simple representation of shooting rays out of a camera.
 
 ## Usage
 1. Enter one of the sub-directories corresponding to the target version of ray-tracer.

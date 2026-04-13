@@ -59,6 +59,10 @@ inline vec3 vec3::operator*(double c) const {
     return vec3(v[0] * c, v[1] * c, v[2] * c);
 }
 
+inline vec3 operator*(double c, const vec3& v) {
+    return vec3(v[0] * c, v[1] * c, v[2] * c);
+}
+
 inline vec3 vec3::operator/(double c) const {
     return vec3(v[0] / c, v[1] / c, v[2] / c);
 }
@@ -90,7 +94,5 @@ inline vec3 unitVector(const vec3& v) {
 inline std::ostream& operator<<(std::ostream& os, const vec3& v) {
     return os << v[0] << ' ' << v[1] << ' ' << v[2];
 }
-
-using Point3 = vec3;
 
 #endif
