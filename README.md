@@ -14,3 +14,6 @@ This project has a few main directories:
 1. [`basicRayTracer`](basicRayTracer/README.md): The working directory for the three books.
 2. [`vulkan`](vulkan/README.md): The working directory for learning Vulkan.
 3. [`main`](main/README.md): The working directory for Stage 3 and onwards.
+
+## Note
+This is more a note to myself, but I **do not** use any code directly in this repository, not from AI, not from references. The only times I refer to existing code is during debugging.
