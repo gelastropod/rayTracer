@@ -30,6 +30,7 @@ I test my code regularly, resulting in many different "versions", all with numbe
 5. Implement abstract class `Material`, which allows rays to gain color and scatter off surfaces. Implemented `Lambertian` material, which allows for diffuse reflections. Minor cleanup of code.
 6. Implemented other materials `Metal`, specular reflections with variable glossy-ness, `Dielectric`, glass material with refractions. More minor cleanup of code.
 7. Implemented variable `Camera` positioning, as well as depth blurring.
+8. (End of Book 1) Implementation of `RandomSphereScene`, a generator of the scene shown on the cover page of Book 1. Constants are increased for a higher quality render.
 
 ## Usage
 1. Enter one of the sub-directories corresponding to the target version of ray-tracer.
