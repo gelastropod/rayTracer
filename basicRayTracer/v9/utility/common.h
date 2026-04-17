@@ -4,6 +4,7 @@
 #include <iostream>
 #include <memory>
 #include <random>
+#include <utility>
 #include <vector>
 
 #include "color.h"
@@ -11,6 +12,7 @@
 #include "ray.h"
 
 using std::make_shared;
+using std::pair;
 using std::shared_ptr;
 using std::vector;
 
@@ -70,7 +72,7 @@ double degrees(double radians) {
 
 // LERP of vec3
 vec3 lerp(double t, vec3 val1, vec3 val2) {
-    return (1.0 - t) * val1 + t * val2;
+    return ((1.0 - t) * val1) + (t * val2);
 }
 
 #endif

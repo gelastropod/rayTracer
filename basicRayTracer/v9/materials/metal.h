@@ -22,6 +22,10 @@ private:
 public:
     // Calculate perfect reflection, then add some noise to it
     bool scatter(const Ray& incident, const HittableRecord& record, Color& attenuation, Ray& scattered) const override;
+    // Does not pass through, return false
+    bool trace(const Ray& shadowRay, const HittableRecord& record, Color& attenuation) const override;
+    // Should trace shadow rays
+    bool traceShadowRays() const override;
 };
 
 vec3 Metal::reflect(const vec3& incident, const vec3& normal) {
@@ -40,6 +44,14 @@ bool Metal::scatter(const Ray& incident, const HittableRecord& record, Color& at
     
     scattered = Ray(record.hitPosition, scatterDirection);
     
+    return true;
+}
+
+bool Metal::trace(const Ray& shadowRay, const HittableRecord& record, Color& attenuation) const {
+    return false;
+}
+
+bool Metal::traceShadowRays() const {
     return true;
 }
 

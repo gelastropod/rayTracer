@@ -36,6 +36,11 @@ int main() {
     world.generateRandomScene(5);
     renderer.setScene(make_shared<RandomSphereScene>(world));
     
+    // For debugging
+    //renderer.debugRay(313, 211);
+    //renderer.debugRay(275, 145);
+    
+    // Render scene
     renderer.render(outFile);
 
     std::cout << '\n';

@@ -27,20 +27,21 @@ void RandomSphereScene::generateRandomScene(int sceneSize) {
                 auto lambertianMaterial = make_shared<Lambertian>(albedo);
                 objects.add(make_shared<Sphere>(sphereCenter, 0.2, lambertianMaterial));
             }
-            else if (materialDouble < 0.9) {
+            else if (materialDouble < 0.8) {
                 Color albedo = randVec3() * randVec3();
                 double glossy = pow(randDouble(), 0.2);
                 auto metalMaterial = make_shared<Metal>(albedo, glossy);
                 objects.add(make_shared<Sphere>(sphereCenter, 0.2, metalMaterial));
             }
             else {
-                auto dielectricMaterial = make_shared<Dielectric>(1.5);
+                Color absorbtion = randVec3() * randVec3();
+                auto dielectricMaterial = make_shared<Dielectric>(1.5, absorbtion);
                 objects.add(make_shared<Sphere>(sphereCenter, 0.2, dielectricMaterial));
             }
         }
     }
 
-    auto sphereMaterial1 = make_shared<Dielectric>(1.5);
+    auto sphereMaterial1 = make_shared<Dielectric>(1.5, Color(1.0, 1.0, 1.0));
     objects.add(make_shared<Sphere>(vec3(0.0, 1.0, 0.0), 1.0, sphereMaterial1));
     auto sphereMaterial2 = make_shared<Lambertian>(Color(0.4, 0.2, 0.1));
     objects.add(make_shared<Sphere>(vec3(-4.0, 1.0, 0.0), 1.0, sphereMaterial2));

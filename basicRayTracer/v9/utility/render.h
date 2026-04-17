@@ -18,6 +18,8 @@ private:
     std::chrono::system_clock::time_point start;
     Camera camera;
     shared_ptr<Scene> scene;
+    vector<pair<int, int>> debug;
+    static const Color debugColor;
 
 public:
     Renderer() : start(std::chrono::system_clock::now()) {}
@@ -27,7 +29,7 @@ public:
 
 private:
     // Get color from ray. Uses recursion
-    Color getColor(const Ray& ray, int depth) const;
+    Color getColor(const Ray& ray, int depth, bool traceShadowRays, bool debug) const;
 
     // Get current number of seconds elapsed since start of render
     double secondsElapsed() const;
@@ -39,7 +41,12 @@ private:
 public:
     // Render image
     void render(std::ostream& os);
+
+    // For debugging, shoots a ray through the given pixel, shoots multiple rays
+    void debugRay(int x, int y);
 };
+
+const Color Renderer::debugColor = Color(1.0, 0.0, 0.0);
 
 Renderer::Renderer(int _nx, int _ny, int _ns, int _nd, Camera _camera) : nx(_nx), ny(_ny), ns(_ns), nd(_nd), camera(_camera) {
     start = std::chrono::system_clock::now();
@@ -50,39 +57,73 @@ void Renderer::setScene(shared_ptr<Scene> _scene) {
     scene = _scene;
 }
 
-Color Renderer::getColor(const Ray& ray, int depth) const {
+Color Renderer::getColor(const Ray& ray, int depth, bool traceShadowRays, bool debug = false) const {
     if (depth <= 0) return Color(0.0, 0.0, 0.0);
 
     Interval tInterval(0.001, MAX);
 
+    if (debug) std::cout << "Ray from " << ray.origin << " direction " << ray.direction << ":\n";
+
     HittableRecord record;
     if (scene->world->hit(ray, tInterval, record)) {
-        Color direct(0.0, 0.0, 0.0);
-        for (const auto& light : scene->lights) {
-            vec3 lightPoint;
-            Color emission;
-            light->sampleLight(lightPoint, emission);
-            Ray lightRay(record.hitPosition, lightPoint - record.hitPosition);
-            HittableRecord lightRayRecord;
+        if (debug) std::cout << "Ray hit at " << record.hitPosition << '\n';
 
-            if (!scene->world->hit(lightRay, tInterval, lightRayRecord)) {
-                double cosTheta = std::fmax(0.0, dot(unitVector(lightRay.direction), record.normal));
-                double squaredLightDistance = lightRay.direction.squaredLength();
-                direct += emission * cosTheta / squaredLightDistance;
+        Color direct(0.0, 0.0, 0.0);
+
+        if (traceShadowRays && record.materialPtr->traceShadowRays()) {
+            for (const auto& light : scene->lights) {
+                vec3 lightPoint;
+                Color emission, attenuation;
+                light->sampleLight(lightPoint, emission);
+                Ray lightRay(record.hitPosition, lightPoint - record.hitPosition);
+                HittableRecord lightRayRecord;
+                Interval crntInterval = tInterval;
+
+                if (debug) std::cout << "Shadow ray to light sampled at " << lightPoint;
+
+                bool hasHitOpaque = false;
+
+                while (scene->world->hit(lightRay, crntInterval, lightRayRecord)) {
+                    if (lightRayRecord.materialPtr->trace(lightRay, lightRayRecord, attenuation)) {
+                        emission *= attenuation;
+                        crntInterval.min = lightRayRecord.t + 0.001;
+                    }
+                    else {
+                        hasHitOpaque = true;
+                        break;
+                    }
+                }
+
+                if (!hasHitOpaque) {
+                    double cosTheta = std::fmax(0.0, dot(unitVector(lightRay.direction), record.normal));
+                    double squaredLightDistance = lightRay.direction.squaredLength();
+                    Color lightContribution = emission * cosTheta / squaredLightDistance;
+                    direct += lightContribution;
+
+                    if (debug) std::cout << ", light contribution " << lightContribution;
+                }
+                if (debug) std::cout << '\n';
             }
+
+            if (debug) std::cout << "Total light contribution " << direct << '\n';
         }
 
         Color attenuation;
         Ray scattered;
 
         if (record.materialPtr->scatter(ray, record, attenuation, scattered)) {
-            Color prevColor = getColor(scattered, depth - 1);
+            if (debug) std::cout << "Scattered ray direction " << scattered.direction << " with attenuation " << attenuation << "\n\n";
+
+            Color prevColor = getColor(scattered, depth - 1, false, debug);
             return direct + attenuation * prevColor;
         }
+        if (debug) std::cout << '\n';
         return direct;
     }
 
-    return scene->skybox.getColor(ray);
+    Color skyboxColor = scene->skybox.getColor(ray);
+    if (debug) std::cout << "Ray hit skybox, color " << skyboxColor << "\n\n";
+    return skyboxColor;
 }
 
 double Renderer::secondsElapsed() const {
@@ -134,6 +175,42 @@ void Renderer::render(std::ostream& os) {
     int numOper = 0;
     for (int y = ny - 1; y >= 0; y--) {
         for (int x = 0; x < nx; x++) {
+            double u = (double)(x) / nx;
+            double v = (double)(y) / ny;
+
+            bool debugged = false;
+            for (const auto& debugPixel : debug) {
+                if (x == debugPixel.first && y == debugPixel.second) {
+                    debugged = true;
+                    break;
+                }
+            }
+
+            if (debugged) std::cout << "\n\n";
+
+            Color color(0.0, 0.0, 0.0);
+            for (int s = 0; s < ns; s++) {
+                if (debugged) std::cout << "Shooting ray " << s << ":\n";
+
+                double uOffset = randDouble() / nx;
+                double vOffset = randDouble() / ny;
+
+                Ray currentRay = camera.getRay(u + uOffset, v + vOffset);
+                Color currentColor = getColor(currentRay, nd, true, debugged);
+                color += currentColor;
+
+                if (debugged) std::cout << "Ray color " << normalise(currentColor) << "\n\n\n";
+            }
+            
+            color /= ns;
+            color = normalise(color);
+
+            if (debugged) std::cout << "Pixel (" << x << ", " << y << "): " << color << "\n\n\n";
+
+            printColor(os, (debugged ? debugColor : color));
+
+            if (debugged) continue;
+
             double elapsedSeconds = secondsElapsed();
             int crntOper = (ny - 1 - y) * nx + x + 1;
             if (elapsedSeconds - prevElapsedSeconds > 1.0 || crntOper - numOper > nx * ny * 0.005) {
@@ -141,23 +218,6 @@ void Renderer::render(std::ostream& os) {
                 prevElapsedSeconds = elapsedSeconds;
                 progressBar(crntOper, nx * ny, 50, elapsedSeconds);
             }
-
-            double u = (double)(x) / nx;
-            double v = (double)(y) / ny;
-            
-            Color color(0.0, 0.0, 0.0);
-            for (int s = 0; s < ns; s++) {
-                double uOffset = randDouble() / nx;
-                double vOffset = randDouble() / ny;
-
-                Ray currentRay = camera.getRay(u + uOffset, v + vOffset);
-                Color currentColor = getColor(currentRay, nd);
-                color += currentColor;
-            }
-            
-            color /= ns;
-            color = normalise(color);
-            printColor(os, color);
         }
     }
 
@@ -165,6 +225,10 @@ void Renderer::render(std::ostream& os) {
 
     double elapsedSeconds = secondsElapsed();
     printf("\nRendering completed in %.02f seconds.\n", elapsedSeconds);
+}
+
+void Renderer::debugRay(int x, int y) {
+    debug.push_back(std::make_pair(x, y));
 }
 
 #endif

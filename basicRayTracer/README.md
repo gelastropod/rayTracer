@@ -31,7 +31,7 @@ I test my code regularly, resulting in many different "versions", all with numbe
 6. Implemented other materials `Metal`, specular reflections with variable glossy-ness, `Dielectric`, glass material with refractions. More minor cleanup of code.
 7. Implemented variable `Camera` positioning, as well as depth blurring.
 8. (End of Book 1) Implementation of `RandomSphereScene`, a generator of the scene shown on the cover page of Book 1. Constants are increased for a higher quality render.
-9. (Extension of Book 1) Implementation of `Light` and shadow rays, as well as more organisation of code.
+9. (Extension of Book 1) Implementation of `Light` and shadow rays, as well as more organisation of code. Added simple implementation of coloured `Dielectric`s.
 
 ## Usage
 1. Enter one of the sub-directories corresponding to the target version of ray-tracer.

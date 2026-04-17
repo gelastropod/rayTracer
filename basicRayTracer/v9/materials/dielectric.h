@@ -8,10 +8,11 @@
 class Dielectric: public Material {
 private:
     double nRatio;
+    Color absorbtion;
 
 public:
     Dielectric() {}
-    Dielectric(double _nRatio) : nRatio(_nRatio) {}
+    Dielectric(double _nRatio, Color _absorbtion) : nRatio(_nRatio), absorbtion(_absorbtion) {}
 
 private:
     // Refracts a vector given surface normal and ratio of refractive indices
@@ -22,6 +23,10 @@ private:
 public:
     // Calculate reflection probability, then apply total internal reflection if applicable, else refraction
     bool scatter(const Ray& incident, const HittableRecord& record, Color& attenuation, Ray& scattered) const override;
+    // Return attenuation
+    bool trace(const Ray& shadowRay, const HittableRecord& record, Color& attenuation) const override;
+    // Should not trace shadow rays
+    bool traceShadowRays() const override;
 };
 
 vec3 Dielectric::refract(const vec3& incident, const vec3& normal, double nRatio) {
@@ -37,7 +42,7 @@ double Dielectric::schlick(double cosTheta, double nRatio) {
 }
 
 bool Dielectric::scatter(const Ray& incident, const HittableRecord& record, Color& attenuation, Ray& scattered) const {
-    attenuation = vec3(1.0, 1.0, 1.0);
+    attenuation = (record.frontFace ? absorbtion : Color(1.0, 1.0, 1.0));
 
     double usedRatio = (record.frontFace ? 1.0 / nRatio : nRatio);
     vec3 unitDirection = unitVector(incident.direction);
@@ -56,6 +61,16 @@ bool Dielectric::scatter(const Ray& incident, const HittableRecord& record, Colo
     scattered = Ray(record.hitPosition, scatteredDirection);
 
     return true;
+}
+
+bool Dielectric::trace(const Ray& shadowRay, const HittableRecord& record, Color& attenuation) const {
+    attenuation = absorbtion;
+
+    return true;
+}
+
+bool Dielectric::traceShadowRays() const {
+    return false;
 }
 
 #endif
